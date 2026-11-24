@@ -2,13 +2,29 @@
   <img src="logo.png" width="160" alt="Masterbatch Lead Gen logo" />
 </p>
 
-# Masterbatch Lead Gen 🎨
+<h1 align="center">Masterbatch Lead Gen 🎨</h1>
 
-> **Turn your AI assistant into a 24/7 overseas sales team for masterbatch manufacturers.**
+<p align="center">
+  <b>Turn your AI assistant into a 24/7 overseas sales team for masterbatch manufacturers.</b>
+</p>
+
+<p align="center">
+  <a href="#license"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/status-production--ready-brightgreen.svg" alt="Status"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/setup-1--command-orange.svg" alt="Setup"></a>
+  <img src="https://img.shields.io/badge/markets-48-blueviolet.svg" alt="48 markets">
+  <img src="https://img.shields.io/badge/languages-20-ff69b4.svg" alt="20 languages">
+  <img src="https://img.shields.io/badge/industries-12-9cf.svg" alt="12 industries">
+  <a href="#contributing"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+</p>
+
+<p align="center">
+  <img src="cover-banner.png" alt="Masterbatch Lead Gen cover banner" width="100%" />
+</p>
+
+> **一句话：** 把「找客户 → 打分 → 开发信 → 跟进」这套外贸获客流程，变成一套可复用的**方法论 + 提示词 + 知识库 Skill**，让你的 AI 助手化身 24/7 不停歇的海外销售团队。
 
 An AI **Skill** for overseas lead generation in the masterbatch industry. It turns the "find → score → outreach → track" export sales loop into a reusable methodology + prompt library that turns your AI assistant into a 24/7 foreign-trade team.
-
-![cover](cover-banner.png)
 
 > **This is a methodology + prompt + knowledge Skill, not an app.** It runs inside any Skill-compatible AI assistant (WorkBuddy, Claude, Cursor, etc.) and reuses the assistant's built-in web search, file I/O, and scheduling — no backend, database, or desktop app required.
 
