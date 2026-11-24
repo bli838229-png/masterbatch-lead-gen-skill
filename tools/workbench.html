@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>色母粒获客本地工作台</title>
+<style>
+:root{
+  --bg:#0b1220; --sidebar:#0f172a; --panel:#1e293b; --panel2:#273449; --line:#334155;
+  --txt:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --red:#f87171;
+  --green:#4ade80; --amber:#fbbf24; --purple:#a78bfa; --cyan:#22d3ee;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);font-size:14px;display:flex;height:100vh;overflow:hidden}
+/* ===== 左侧导航 ===== */
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 0;overflow-y:auto}
+.sidebar .logo{padding:0 20px 16px;font-size:17px;font-weight:800;border-bottom:1px solid var(--line);margin-bottom:12px}
+.sidebar .logo .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);margin-right:7px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:var(--muted);cursor:pointer;font-size:13.5px;border-left:3px solid transparent;transition:.15s}
+.nav-item:hover{color:var(--txt);background:rgba(56,189,248,.06)}
+.nav-item.on{color:var(--accent);background:rgba(56,189,248,.1);border-left-color:var(--accent);font-weight:700}
+.nav-item .ic{font-size:16px;width:20px;text-align:center}
+.nav-item .cnt{margin-left:auto;font-size:11px;background:var(--panel2);padding:2px 7px;border-radius:10px;color:var(--muted)}
+.sidebar .section{padding:14px 20px 6px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+/* ===== 主区 ===== */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.topbar h2{font-size:15px;font-weight:700;white-space:nowrap}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
+select,input[type=text]{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 11px;font-size:13px;outline:none}
+select:focus,input:focus{border-color:var(--accent)}
+input[type=text]{flex:1;min-width:140px}
+button{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:6px 11px;font-size:12px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accent);color:#0f172a;border-color:var(--accent);font-weight:700}
+button.copy{background:rgba(56,189,248,.12);border-color:var(--accent);color:var(--accent)}
+button.sent{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green)}
+button.sent.on{background:var(--green);color:#0f172a}
+button.primary{background:var(--accent);color:#0f172a;border-color:var(--accent);font-weight:700}
+.content{flex:1;overflow-y:auto;padding:16px 20px}
+/* ===== 统计卡 ===== */
+.statbar{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+.stat .k{font-size:11px;color:var(--muted)}
+.stat .v{font-size:22px;font-weight:800;margin-top:3px}
+.stat .v.red{color:var(--red)} .stat .v.green{color:var(--green)} .stat .v.amber{color:var(--amber)} .stat .v.cyan{color:var(--cyan)}
+/* ===== 客户卡片 ===== */
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;position:relative}
+.card.gA{border-left:3px solid var(--red)}
+.card.gB{border-left:3px solid var(--amber)}
+.card.gC{border-left:3px solid var(--muted)}
+.card .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card .nm{font-weight:700;font-size:15px;line-height:1.3}
+.badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700;white-space:nowrap}
+.bA{background:rgba(248,113,113,.15);color:var(--red)}
+.bB{background:rgba(251,191,36,.15);color:var(--amber)}
+.bC{background:rgba(148,163,184,.15);color:var(--muted)}
+.card .meta{font-size:12px;color:var(--muted);line-height:1.5}
+.card .prod{font-size:12px;color:var(--txt);background:var(--panel2);border-radius:6px;padding:6px 8px;line-height:1.5}
+.card .prod b{color:var(--accent)}
+.card .score{position:absolute;top:12px;right:12px;font-size:20px;font-weight:800;color:var(--txt)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.strow{display:flex;gap:5px;flex-wrap:wrap}
+.strow button{font-size:11px;padding:4px 8px}
+.strow button.cur{background:var(--purple);border-color:var(--purple);color:#fff;font-weight:700}
+.detail{display:none;border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-size:12.5px;line-height:1.6}
+.detail.open{display:block}
+.detail .email{background:#0b1220;border-radius:8px;padding:10px;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#cbd5e1;margin:6px 0}
+.detail .lbl{color:var(--amber);font-weight:700;margin:8px 0 2px}
+.detail .wa{background:#0b1220;border-radius:8px;padding:8px 10px;margin:4px 0;color:#cbd5e1}
+.contact a{color:var(--accent);text-decoration:none;word-break:break-all}
+.empty{padding:50px;text-align:center;color:var(--muted)}
+/* ===== 仪表盘 ===== */
+.dash-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.kpi:hover{border-color:var(--accent);transform:translateY(-2px)}
+.kpi .ic{font-size:22px;margin-bottom:8px}
+.kpi .v{font-size:30px;font-weight:800;line-height:1}
+.kpi .v.red{color:var(--red)} .kpi .v.green{color:var(--green)} .kpi .v.amber{color:var(--amber)} .kpi .v.cyan{color:var(--cyan)} .kpi .v.purple{color:var(--purple)}
+.kpi .k{font-size:12px;color:var(--muted);margin-top:6px}
+.kpi .sub{font-size:11px;color:#64748b;margin-top:3px}
+.dash-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:16px}
+.dash-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.dash-card h3{font-size:14px;font-weight:700;margin-bottom:14px}
+/* 面积趋势图 */
+.area-chart{width:100%;height:auto}
+.area-chart .grid-line{stroke:var(--line);stroke-width:0.5}
+.area-chart .area{fill:url(#areaGrad)}
+.area-chart .line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.area-chart .pt{fill:var(--accent)}
+.area-chart .xlab{fill:var(--muted);font-size:10px;text-anchor:middle}
+.area-chart .ylab{fill:var(--muted);font-size:9px;text-anchor:end}
+.area-chart .ptnum{fill:var(--txt);font-size:11px;font-weight:700;text-anchor:middle}
+/* 今日待办 */
+.todo-list{display:flex;flex-direction:column;gap:8px}
+.todo-row{display:flex;align-items:center;gap:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s}
+.todo-row:hover{border-color:var(--red);background:rgba(248,113,113,.06)}
+.todo-idx{width:26px;height:26px;border-radius:50%;background:rgba(248,113,113,.15);color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+.todo-info{flex:1;min-width:0}
+.todo-nm{font-weight:600;font-size:13.5px}
+.todo-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.todo-acts{flex-shrink:0}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.quick{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:.15s;text-align:center}
+.quick:hover{border-color:var(--accent)}
+.quick .ic{font-size:22px}
+.quick .t{font-size:13px;font-weight:600;margin-top:6px}
+.quick .d{font-size:11px;color:var(--muted);margin-top:3px}
+/* ===== 数据分析 ===== */
+.analytics{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.chart-card h3{font-size:14px;font-weight:700;margin-bottom:14px;color:var(--txt)}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-row .lb{width:110px;font-size:12px;color:var(--muted);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-row .track{flex:1;background:var(--panel2);border-radius:5px;height:18px;position:relative;overflow:hidden}
+.bar-row .fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),var(--cyan));transition:width .4s}
+.bar-row .val{width:40px;font-size:12px;font-weight:700;text-align:left;flex-shrink:0}
+.trend-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tbl th{background:var(--panel2);color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.tbl td{padding:8px 10px;border-bottom:1px solid var(--line)}
+table.tbl tr:hover td{background:rgba(56,189,248,.04)}
+.pill{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:700}
+.pill.A{background:rgba(248,113,113,.15);color:var(--red)}
+.pill.B{background:rgba(251,191,36,.15);color:var(--amber)}
+.pill.C{background:rgba(148,163,184,.15);color:var(--muted)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#0f172a;font-weight:700;padding:10px 22px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1}
+/* ===== 批量发送 ===== */
+.bs-panel{display:flex;flex-direction:column;gap:14px}
+.bs-config{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.bs-config h3{font-size:14px;font-weight:700;margin-bottom:12px}
+.bs-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.bs-form label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.bs-form input{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 11px;font-size:13px}
+.bs-form input:focus{border-color:var(--accent);outline:none}
+.bs-actions{display:flex;gap:8px;flex-wrap:wrap}
+.bs-progress{background:var(--panel2);border-radius:8px;height:22px;position:relative;overflow:hidden}
+.bs-progress .bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0;transition:width .4s}
+.bs-progress .txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0f172a}
+.bs-results{margin-top:12px;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.bs-res{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 10px;border-radius:7px;background:var(--panel2)}
+.bs-res.ok{border-left:3px solid var(--green)}
+.bs-res.fail{border-left:3px solid var(--red)}
+.bs-res .em{color:var(--muted);margin-left:auto;font-size:11.5px;word-break:break-all}
+.bs-note{font-size:12px;color:var(--muted);line-height:1.7}
+.bs-note b{color:var(--amber)}
+/* ===== WhatsApp ===== */
+.wa-list{display:flex;flex-direction:column;gap:12px}
+.wa-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:16px;align-items:flex-start}
+.wa-card.gA{border-left:3px solid var(--red)}
+.wa-card.gB{border-left:3px solid var(--amber)}
+.wa-card.gC{border-left:3px solid var(--muted)}
+.wa-left{flex-shrink:0;display:flex;flex-direction:column;gap:10px;min-width:180px}
+.wa-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#25d366;color:#fff;border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none}
+.wa-btn:hover{background:#1ebc59;transform:translateY(-1px)}
+.wa-note-btn{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer}
+.wa-note-btn:hover{border-color:var(--accent)}
+.wa-body{flex:1;min-width:0}
+.wa-nm{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+.wa-meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.wa-opener{background:#0b1220;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:13px;line-height:1.6;color:#cbd5e1;white-space:pre-wrap}
+.wa-opener .cn{color:var(--muted);font-size:12px;margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.wa-opener-acts{margin-top:8px;display:flex;gap:6px}
+.wa-copy{background:rgba(56,189,248,.12);border-color:var(--accent);color:var(--accent)}
+.wa-note-box{background:var(--panel2);border-radius:6px;padding:6px 8px;font-size:11.5px;color:var(--muted);margin-top:6px;word-break:break-all}
+/* ===== 当天新客户 ===== */
+.daily-day{margin-bottom:18px}
+.daily-day-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.daily-day-hd .dt{font-size:14px;font-weight:700;color:var(--accent)}
+.daily-day-hd .badge-in{font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(74,222,128,.15);color:var(--green)}
+.daily-day-hd .badge-out{font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(251,191,36,.15);color:var(--amber)}
+.daily-row{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:6px}
+.daily-row.gA{border-left:3px solid var(--red)}
+.daily-row.gB{border-left:3px solid var(--amber)}
+.daily-row.gC{border-left:3px solid var(--muted)}
+.daily-row .chk{flex-shrink:0}
+.daily-info{flex:1;min-width:0}
+.daily-nm{font-weight:600;font-size:13.5px}
+.daily-meta{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.daily-acts{flex-shrink:0;display:flex;gap:6px;align-items:center}
+.daily-actions-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.daily-acts{flex-shrink:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.daily-fu{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700;white-space:nowrap}
+.daily-fu.no{background:rgba(251,191,36,.15);color:var(--amber)}
+.daily-fu.yes{background:rgba(74,222,128,.15);color:var(--green)}
+.daily-wa-no{font-size:11px;color:#64748b;white-space:nowrap}
+.daily-wa-yes{font-size:11px;color:var(--green);font-weight:700;white-space:nowrap}
+button.fu-btn{font-size:11px;padding:4px 9px}
+.daily-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.daily-stat{flex:1;min-width:130px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.daily-stat .k{font-size:11px;color:var(--muted)}
+.daily-stat .v{font-size:22px;font-weight:800}
+.daily-stat .v.wa{color:var(--green)}
+.daily-stat .v.fu{color:var(--cyan)}
+.daily-stat .v.un{color:var(--amber)}
+.daily-stat .bar{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-top:4px}
+.daily-stat .bar i{display:block;height:100%;border-radius:3px}
+.daily-day-stat{font-size:11px;color:var(--muted)}
+/* ===== 待跟进视图 ===== */
+.todo-list{display:flex;flex-direction:column;gap:10px}
+.todo-row{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:10px;padding:12px 14px}
+.todo-row.gA{border-left-color:var(--red)}
+.todo-row.gB{border-left-color:var(--amber)}
+.todo-row.gC{border-left-color:var(--muted)}
+.todo-info{flex:1;min-width:0}
+.todo-nm{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.todo-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.todo-prod{font-size:12px;color:var(--txt);margin-top:3px}
+.todo-acts{flex-shrink:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.todo-num{font-size:11px;color:var(--muted)}
+.btn-mail{display:inline-block;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:7px;background:var(--accent);color:#0b1220;font-weight:700}
+.btn-mail:hover{opacity:.9}
+.todo-empty-acts{font-size:11px;color:#64748b}
+/* ===== 获客发现 ===== */
+.ds-panel{display:flex;flex-direction:column;gap:14px}
+.ds-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.ds-form label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.ds-form input,.ds-form select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 11px;font-size:13px}
+.ds-form input:focus,.ds-form select:focus{border-color:var(--accent);outline:none}
+.ds-chk-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.ds-chk-row label{font-size:13px;color:var(--txt);display:flex;align-items:center;gap:6px;cursor:pointer}
+.ds-chk-row input{accent-color:var(--accent);width:16px;height:16px}
+.ds-log{background:#0b1220;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;color:#cbd5e1;max-height:240px;overflow-y:auto;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+.ds-log .t{color:var(--muted);margin-right:6px}
+.ds-res-row{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.ds-res-row .nm{font-weight:700;font-size:14px}
+.ds-res-row .src{font-size:10.5px;padding:1px 7px;border-radius:5px;background:var(--panel2);color:var(--muted);margin-left:6px}
+.ds-res-row .meta{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.6;word-break:break-all}
+.ds-res-row .meta a{color:var(--accent);text-decoration:none}
+.ds-badge{font-size:11px;padding:2px 8px;border-radius:6px;display:inline-block;margin-right:4px}
+.ds-badge.ok{background:rgba(74,222,128,.15);color:var(--green)}
+.ds-badge.no{background:rgba(148,163,184,.12);color:var(--muted)}
+</style>
+</head>
+<body>
+<!-- 左侧导航 -->
+<div class="sidebar">
+  <div class="logo"><span class="dot"></span>获客工作台</div>
+  <div class="nav-item on" data-view="dashboard" onclick="switchView('dashboard')"><span class="ic">🏠</span>仪表盘</div>
+  <div class="nav-item" data-view="daily" onclick="switchView('daily')"><span class="ic">📥</span>当天新客户<span class="cnt" id="navDaily"></span></div>
+  <div class="nav-item" data-view="customers" onclick="switchView('customers')"><span class="ic">👥</span>客户列表<span class="cnt" id="navCustomers"></span></div>
+  <div class="nav-item" data-view="analytics" onclick="switchView('analytics')"><span class="ic">📊</span>数据分析</div>
+  <div class="nav-item" data-view="sendlist" onclick="switchView('sendlist')"><span class="ic">✉️</span>发信队列<span class="cnt" id="navSendable"></span></div>
+  <div class="nav-item" data-view="bulksend" onclick="switchView('bulksend')"><span class="ic">📮</span>批量发送</div>
+  <div class="nav-item" data-view="discover" onclick="switchView('discover')"><span class="ic">🔍</span>获客发现</div>
+  <div class="nav-item" data-view="whatsapp" onclick="switchView('whatsapp')"><span class="ic">💬</span>WhatsApp<span class="cnt" id="navWa"></span></div>
+  <div class="nav-item" data-view="todo" onclick="switchView('todo')"><span class="ic">⏳</span>待跟进<span class="cnt" id="navTodo"></span></div>
+  <div class="nav-item" data-view="rejected" onclick="switchView('rejected')"><span class="ic">🗑️</span>已剔除<span class="cnt" id="navRejected"></span></div>
+  <div class="nav-item" data-view="followup" onclick="switchView('followup')"><span class="ic">📋</span>跟进记录</div>
+  <div class="nav-item" data-view="export" onclick="switchView('export')"><span class="ic">📤</span>数据导出</div>
+  <div class="section">筛选</div>
+  <div class="nav-item" onclick="quickFilter('grade','A')"><span class="ic">🔴</span>A级客户<span class="cnt" id="navA"></span></div>
+  <div class="nav-item" onclick="quickFilter('status','未发')"><span class="ic">🕐</span>未发送<span class="cnt" id="navUnsent"></span></div>
+  <div class="section">本地</div>
+  <div class="nav-item"><span class="ic">💾</span>数据已存本地</div>
+</div>
+
+<!-- 主区 -->
+<div class="main">
+  <div class="topbar">
+    <h2 id="viewTitle">客户列表</h2>
+    <div class="toolbar" id="toolbar">
+      <select id="market"><option value="">全部市场</option></select>
+      <select id="date"><option value="">全部日期</option></select>
+      <select id="grade"><option value="">全部等级</option><option>A</option><option>B</option><option>C</option></select>
+      <select id="status"><option value="">全部状态</option></select>
+      <input type="text" id="q" placeholder="搜公司名 / 行业 / 城市…">
+      <button onclick="clearFilters()">重置</button>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+let ALL = [];
+let sel = {market:"",date:"",grade:"",status:"",q:""};
+let curView = "customers";
+
+async function api(path, opt){
+  const r = await fetch(path, opt);
+  return r.json();
+}
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 1500);
+}
+function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+async function load(){
+  const res = await api("/api/customers");
+  ALL = res.data;
+  fillDropdowns();
+  renderDashboard();
+}
+
+function fillDropdowns(){
+  const mk = {}; ALL.forEach(c=>{ const m=c["国家"]||"?"; mk[m]=(mk[m]||0)+1; });
+  $("#market").innerHTML = '<option value="">全部市场</option>' +
+    Object.entries(mk).sort((a,b)=>b[1]-a[1]).map(([m,n])=>`<option value="${esc(m)}">${esc(m)}（${n}）</option>`).join("");
+  api("/api/dates").then(r=>{
+    $("#date").innerHTML = '<option value="">全部日期</option>' +
+      r.data.map(d=>`<option value="${d.date}">${d.date.slice(0,4)}-${d.date.slice(4,6)}-${d.date.slice(6,8)}（${d.count}家）</option>`).join("");
+  });
+  api("/api/statuses").then(r=>{
+    $("#status").innerHTML = '<option value="">全部状态</option><option value="未发">未发送</option>' +
+      r.data.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+  });
+  // 导航计数
+  $("#navCustomers").textContent = ALL.length;
+  $("#navA").textContent = ALL.filter(c=>c["等级"]==="A").length;
+  $("#navUnsent").textContent = ALL.filter(c=>!c["已发送"]).length;
+  $("#navSendable").textContent = ALL.filter(c=>(c["邮箱"]||"").includes("@")).length;
+  $("#navTodo").textContent = ALL.filter(c=>(c["跟进状态"]||"未联系")==="未联系").length;
+  // 已剔除计数（无联系方式客户）
+  api("/api/rejected").then(r=>{ $("#navRejected").textContent = (r.data||[]).length; });
+}
+
+function switchView(v){
+  curView = v;
+  document.querySelectorAll(".nav-item[data-view]").forEach(n=>n.classList.toggle("on", n.dataset.view===v));
+  const titles = {dashboard:"仪表盘",daily:"当天新客户",customers:"客户列表",analytics:"数据分析",sendlist:"发信队列",bulksend:"批量发送",discover:"获客发现",whatsapp:"WhatsApp",todo:"待跟进客户",rejected:"已剔除客户（无联系方式）",followup:"跟进记录",export:"数据导出"};
+  $("#viewTitle").textContent = titles[v] || "客户列表";
+  $("#toolbar").style.display = (v==="customers"||v==="sendlist"||v==="bulksend"||v==="followup") ? "flex" : "none";
+  if(v==="dashboard") renderDashboard();
+  else if(v==="daily") renderDaily();
+  else if(v==="analytics") renderAnalytics();
+  else if(v==="sendlist") renderSendlist();
+  else if(v==="bulksend") renderBulkSend();
+  else if(v==="discover") renderDiscover();
+  else if(v==="whatsapp") renderWhatsApp();
+  else if(v==="todo") renderTodo();
+  else if(v==="rejected") renderRejected();
+  else if(v==="followup") renderFollowup();
+  else if(v==="export") renderExport();
+  else render();
+}
+
+function quickFilter(type, val){
+  switchView("customers");
+  if(type==="grade"){ sel.grade = val; $("#grade").value = val; }
+  if(type==="status"){ sel.status = val; $("#status").value = val; }
+  render();
+}
+
+function filtered(){
+  let list = ALL;
+  if(sel.market) list = list.filter(c=>c["国家"]===sel.market);
+  if(sel.grade) list = list.filter(c=>c["等级"]===sel.grade);
+  if(sel.status){
+    if(sel.status==="未发") list = list.filter(c=>!c["已发送"]);
+    else list = list.filter(c=>(c["跟进状态"]||"未联系")===sel.status);
+  }
+  if(sel.q) list = list.filter(c=>(c["公司名"]+c["行业"]+c["城市"]+c["国家"]).toLowerCase().includes(sel.q));
+  list.sort((a,b)=>{const o={"A":0,"B":1,"C":2}; return (o[a["等级"]]??3)-(o[b["等级"]]??3) || (parseInt(b["总分"]||0)-parseInt(a["总分"]||0));});
+  return list;
+}
+
+function statbar(list){
+  const st = {总数:list.length, A:0,B:0,C:0,已发送:0,有邮箱:0,有官网产品:0};
+  list.forEach(c=>{
+    st[c["等级"]]=(st[c["等级"]]||0)+1;
+    if(c["已发送"]) st.已发送++;
+    if((c["邮箱"]||"").includes("@")) st.有邮箱++;
+    if((c["官网产品"]||"").trim()) st.有官网产品++;
+  });
+  return `<div class="statbar">
+    <div class="stat"><div class="k">当前客户</div><div class="v">${st.总数}</div></div>
+    <div class="stat"><div class="k">A级</div><div class="v red">${st.A||0}</div></div>
+    <div class="stat"><div class="k">B级</div><div class="v amber">${st.B||0}</div></div>
+    <div class="stat"><div class="k">C级</div><div class="v">${st.C||0}</div></div>
+    <div class="stat"><div class="k">已发送</div><div class="v green">${st.已发送}</div></div>
+    <div class="stat"><div class="k">有邮箱</div><div class="v cyan">${st.有邮箱}</div></div>
+    <div class="stat"><div class="k">有官网产品</div><div class="v">${st.有官网产品}</div></div>
+  </div>`;
+}
+
+// ===== 视图：客户列表 =====
+function render(){
+  const list = filtered();
+  if(!list.length){
+    $("#content").innerHTML = statbar(list) + '<div class="empty">没有符合条件的客户</div>';
+    return;
+  }
+  const cards = list.map(c=>{
+    const g = c["等级"]||"C";
+    const st = c["跟进状态"]||"未联系";
+    const badge = g==="A"?'bA':g==="B"?'bB':'bC';
+    const hasEmail = (c["邮箱"]||"").includes("@");
+    const hasProd = (c["官网产品"]||"").trim();
+    const wa = c["wa_opener"], email = c["email_body"], subj = c["email_subject"];
+    return `
+    <div class="card g${g}">
+      <div class="hd"><div class="nm">${esc(c["公司名"]||"?")}</div><span class="badge ${badge}">${g}</span></div>
+      <div class="score">${esc(c["总分"]||"")}</div>
+      <div class="meta">🌍 ${esc(c["国家"]||"?")} · 📍 ${esc(c["城市"]||"—")} · 🏭 ${esc(c["行业"]||"—")}</div>
+      ${hasProd?`<div class="prod"><b>官网产品：</b>${esc(c["官网产品"])}</div>`:''}
+      ${c["官网"]?`<div class="meta contact">🌐 <a href="${esc(c["官网"])}" target="_blank">${esc(c["官网"])}</a></div>`:''}
+      ${hasEmail?`<div class="meta contact">✉️ <a href="mailto:${esc(c["邮箱"])}">${esc(c["邮箱"])}</a></div>`:`<div class="meta">✉️ 邮箱待补</div>`}
+      <div class="meta" style="color:var(--amber)">👤 ${esc(c["联系人"]||"待核实")} ${esc(c["职位"]||"")}</div>
+      <div class="strow">
+        ${["未联系","已发信","已回复","已报价","已寄样","成交","无效"].map(s=>`<button class="${s===st?'cur':''}" onclick="setStatus('${esc(c._key)}','${s}')">${s}</button>`).join("")}
+      </div>
+      <div class="acts">
+        <button class="sent ${c["已发送"]?'on':''}" onclick="toggleSent(this,'${esc(c._key)}')">${c["已发送"]?'✓ 已发送':'标记已发送'}</button>
+        <button onclick="toggleDetail(this)">开发信</button>
+        ${email?`<button class="copy" onclick="copyText('${esc(c._key)}','email',this)">复制邮件</button>`:''}
+        ${wa?`<button class="copy" onclick="copyText('${esc(c._key)}','wa',this)">复制IM</button>`:''}
+      </div>
+      <div class="detail">
+        ${wa?`<div class="lbl">① IM 开场白（英语两句）</div><div class="wa">${esc(wa)}</div><div class="lbl">中文参照</div><div class="wa">${esc(c["wa_opener_cn"]||"—")}</div>`:''}
+        ${subj?`<div class="lbl">② 完整邮件</div><div style="font-weight:600">Subject: ${esc(subj)}</div>`:''}
+        ${email?`<div class="email">${esc(email)}</div><div class="lbl">中文参照</div><div class="email">${esc(c["email_body_cn"]||"—")}</div>`:''}
+        ${!wa&&!email?`<div style="color:var(--muted)">暂无开发信内容</div>`:''}
+      </div>
+    </div>`;
+  }).join("");
+  $("#content").innerHTML = statbar(list) + `<div class="list">${cards}</div>`;
+}
+
+// ===== 辅助：SVG 面积趋势图 =====
+function areaChart(data, key, w, h){
+  if(!data || data.length < 2){
+    return '<div class="empty">数据不足</div>';
+  }
+  const pad = {l:34, r:14, t:24, b:22};
+  const iw = w - pad.l - pad.r;
+  const ih = h - pad.t - pad.b;
+  const maxV = Math.max(...data.map(d=>d[key]), 1);
+  const n = data.length;
+  const stepX = iw / (n - 1);
+  const pts = data.map((d,i)=>({
+    x: pad.l + i * stepX,
+    y: pad.t + ih - (d[key] / maxV) * ih,
+    v: d[key],
+    date: d.date
+  }));
+  const line = pts.map((p,i)=>(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const area = line + ' L' + pts[pts.length-1].x.toFixed(1) + ',' + (pad.t+ih).toFixed(1) + ' L' + pts[0].x.toFixed(1) + ',' + (pad.t+ih).toFixed(1) + ' Z';
+  // 网格线（3条横线）
+  let grid = '';
+  for(let g=1; g<=3; g++){
+    const gy = pad.t + ih - (ih * g / 3);
+    grid += `<line class="grid-line" x1="${pad.l}" y1="${gy}" x2="${pad.l+iw}" y2="${gy}"/>`;
+    grid += `<text class="ylab" x="${pad.l-5}" y="${gy+3}">${Math.round(maxV*g/3)}</text>`;
+  }
+  const xlabs = pts.map(p=>`<text class="xlab" x="${p.x}" y="${h-6}">${p.date.slice(4,6)}-${p.date.slice(6,8)}</text>`).join('');
+  const ptDots = pts.map(p=>`<circle class="pt" cx="${p.x}" cy="${p.y}" r="3.5"/>`).join('');
+  const ptNums = pts.map(p=>`<text class="ptnum" x="${p.x}" y="${p.y-8}">${p.v}</text>`).join('');
+  return `<svg class="area-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
+    <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    ${grid}
+    <path class="area" d="${area}"/>
+    <path class="line" d="${line}"/>
+    ${ptDots}${ptNums}${xlabs}
+  </svg>`;
+}
+
+// ===== 视图：仪表盘首页 =====
+async function renderDashboard(){
+  $("#content").innerHTML = '<div class="empty">加载中…</div>';
+  const r = await api("/api/analytics");
+  const a = r.data;
+
+  // 本周新增（最近7天内的每日新增之和）
+  const today = new Date();
+  const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate()-7);
+  const weekNew = a["趋势"].filter(t=>{
+    const d = new Date(parseInt(t.date.slice(0,4)), parseInt(t.date.slice(4,6))-1, parseInt(t.date.slice(6,8)));
+    return d >= weekAgo && d <= today;
+  }).reduce((s,t)=>s+t.new, 0);
+
+  const A = a["等级"][0]?.value || 0;
+  const B = a["等级"][1]?.value || 0;
+  const C = a["等级"][2]?.value || 0;
+
+  // 本周新增趋势（SVG 面积图）
+  const recent = a["趋势"].slice(-7);
+  const trendChart = areaChart(recent, "new", 520, 170);
+
+  // 市场分布速览
+  const maxMarket = Math.max(...a["市场"].map(x=>x.value),1);
+  const marketQuick = a["市场"].slice(0,5).map(x=>`
+    <div class="bar-row"><div class="lb">${esc(x.name)}</div><div class="track"><div class="fill" style="width:${x.value/maxMarket*100}%"></div></div><div class="val">${x.value}</div></div>`).join("");
+
+  // 今日待办：A级未联系客户（按总分降序，取前8）
+  const todoList = ALL.filter(c=>c["等级"]==="A" && (c["跟进状态"]||"未联系")==="未联系")
+    .sort((a,b)=>(parseInt(b["总分"]||0)-parseInt(a["总分"]||0)))
+    .slice(0, 8);
+  const todoRows = todoList.map((c,i)=>`
+    <div class="todo-row" onclick="openCustomer('${esc(c._key)}')">
+      <div class="todo-idx">${i+1}</div>
+      <div class="todo-info">
+        <div class="todo-nm">${esc(c["公司名"])} <span class="pill A">A</span></div>
+        <div class="todo-meta">🌍 ${esc(c["国家"])} · 🏭 ${esc(c["行业"]||"—")} · ${esc(c["总分"])}分</div>
+      </div>
+      <div class="todo-acts">
+        <button class="sent" onclick="event.stopPropagation();markSentQuick('${esc(c._key)}',this)">✓ 标记已发信</button>
+        ${c["邮箱"]?`<a href="mailto:${esc(c["邮箱"])}" style="color:var(--accent);text-decoration:none;margin-left:4px" onclick="event.stopPropagation()">✉️</a>`:''}
+      </div>
+    </div>`).join("");
+  const todoBlock = todoList.length ? `
+    <div class="dash-card" style="margin-top:16px;border-left:3px solid var(--red)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h3 style="margin:0">📌 今日待办 · A级未联系（${todoList.length} 家）</h3>
+        <button class="primary" onclick="markAllSentQuick()">全部标记已发信</button>
+      </div>
+      <div class="todo-list">${todoRows}</div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">点击客户跳转到客户列表定位；点「标记已发信」即落盘</div>
+    </div>` : "";
+
+  $("#content").innerHTML = `
+    <div class="dash-hero">
+      <div class="kpi" onclick="switchView('customers')">
+        <div class="ic">👥</div><div class="v cyan">${a["总客户"]}</div>
+        <div class="k">总客户</div><div class="sub">6 个市场累计</div>
+      </div>
+      <div class="kpi" onclick="quickFilter('grade','A')">
+        <div class="ic">🔴</div><div class="v red">${A}</div>
+        <div class="k">A级客户</div><div class="sub">优先跟进</div>
+      </div>
+      <div class="kpi" onclick="quickFilter('status','未发')">
+        <div class="ic">🕐</div><div class="v amber">${a["总客户"]-a["已发送"]}</div>
+        <div class="k">未发送</div><div class="sub">待触达</div>
+      </div>
+      <div class="kpi" onclick="switchView('analytics')">
+        <div class="ic">🚀</div><div class="v green">${weekNew}</div>
+        <div class="k">本周新增</div><div class="sub">最近 7 天</div>
+      </div>
+      <div class="kpi" onclick="switchView('sendlist')">
+        <div class="ic">✉️</div><div class="v purple">${a["邮箱覆盖"]}</div>
+        <div class="k">有邮箱</div><div class="sub">可发邮件</div>
+      </div>
+      <div class="kpi" onclick="switchView('analytics')">
+        <div class="ic">🎯</div><div class="v">${a["官网产品覆盖"]}</div>
+        <div class="k">有官网产品</div><div class="sub">可个性化</div>
+      </div>
+    </div>
+    <div class="dash-row">
+      <div class="dash-card">
+        <h3>📅 本周新增趋势</h3>
+        ${trendChart}
+      </div>
+      <div class="dash-card">
+        <h3>🌍 市场分布速览</h3>
+        ${marketQuick}
+        <div style="margin-top:12px;color:var(--muted);font-size:12px">A级 ${A} · B级 ${B} · C级 ${C} ｜ 共 ${a["总客户"]} 家</div>
+      </div>
+    </div>
+    ${todoBlock}
+    <div class="dash-card" style="margin-top:16px">
+      <h3>⚡ 快捷入口</h3>
+      <div class="quick-grid">
+        <div class="quick" onclick="switchView('customers')"><div class="ic">👥</div><div class="t">客户列表</div><div class="d">浏览与筛选全部客户</div></div>
+        <div class="quick" onclick="switchView('analytics')"><div class="ic">📊</div><div class="t">数据分析</div><div class="d">多维统计看板</div></div>
+        <div class="quick" onclick="switchView('sendlist')"><div class="ic">✉️</div><div class="t">发信队列</div><div class="d">${a["邮箱覆盖"]} 家可发邮件</div></div>
+        <div class="quick" onclick="switchView('followup')"><div class="ic">📋</div><div class="t">跟进记录</div><div class="d">${a["已发送"]} 家已发送</div></div>
+        <div class="quick" onclick="switchView('export')"><div class="ic">📤</div><div class="t">数据导出</div><div class="d">导出 CSV / 邮箱</div></div>
+      </div>
+    </div>`;
+}
+
+// ===== 视图：数据分析 =====
+async function renderAnalytics(){
+  $("#content").innerHTML = '<div class="empty">加载中…</div>';
+  const r = await api("/api/analytics");
+  const a = r.data;
+  const maxMarket = Math.max(...a["市场"].map(x=>x.value),1);
+  const maxInd = Math.max(...a["行业"].map(x=>x.value),1);
+  const maxStatus = Math.max(...a["状态"].map(x=>x.value),1);
+
+  const marketBars = a["市场"].map(x=>`
+    <div class="bar-row"><div class="lb">${esc(x.name)}</div><div class="track"><div class="fill" style="width:${x.value/maxMarket*100}%"></div></div><div class="val">${x.value}</div></div>`).join("");
+
+  const indBars = a["行业"].map(x=>`
+    <div class="bar-row"><div class="lb" title="${esc(x.name)}">${esc(x.name)}</div><div class="track"><div class="fill" style="width:${x.value/maxInd*100}%"></div></div><div class="val">${x.value}</div></div>`).join("");
+
+  const statusBars = a["状态"].map(x=>`
+    <div class="bar-row"><div class="lb">${esc(x.name)}</div><div class="track"><div class="fill" style="width:${x.value/maxStatus*100}%"></div></div><div class="val">${x.value}</div></div>`).join("");
+
+  // 等级×市场交叉表
+  const markets = Object.keys(a["等级市场交叉"]);
+  const crossRows = markets.map(m=>{
+    const g = a["等级市场交叉"][m]||{};
+    return `<tr><td>${esc(m)}</td><td><span class="pill A">${g.A||0}</span></td><td><span class="pill B">${g.B||0}</span></td><td><span class="pill C">${g.C||0}</span></td><td>${(g.A||0)+(g.B||0)+(g.C||0)}</td></tr>`;
+  }).join("");
+
+  // 趋势表
+  const trendRows = a["趋势"].map(t=>`
+    <tr><td>${t.date.slice(0,4)}-${t.date.slice(4,6)}-${t.date.slice(6,8)}</td><td>${t.new}</td><td>${t.cum}</td></tr>`).join("");
+
+  const ch = a["社交渠道"];
+  $("#content").innerHTML = `
+    <div class="statbar">
+      <div class="stat"><div class="k">总客户</div><div class="v cyan">${a["总客户"]}</div></div>
+      <div class="stat"><div class="k">已发送</div><div class="v green">${a["已发送"]}</div></div>
+      <div class="stat"><div class="k">有邮箱</div><div class="v cyan">${a["邮箱覆盖"]}</div></div>
+      <div class="stat"><div class="k">有官网产品</div><div class="v">${a["官网产品覆盖"]}</div></div>
+      <div class="stat"><div class="k">总分均值</div><div class="v amber">${a["总分均值"]}</div></div>
+    </div>
+    <div class="analytics">
+      <div class="chart-card"><h3>📊 市场分布</h3>${marketBars}</div>
+      <div class="chart-card"><h3>🏭 行业分布（Top12）</h3>${indBars}</div>
+      <div class="chart-card"><h3>📈 跟进状态分布</h3>${statusBars}</div>
+      <div class="chart-card"><h3>🔗 社交渠道覆盖</h3>
+        <div class="bar-row"><div class="lb">WhatsApp</div><div class="track"><div class="fill" style="width:${ch.WhatsApp/maxMarket*100}%"></div></div><div class="val">${ch.WhatsApp}</div></div>
+        <div class="bar-row"><div class="lb">Zalo</div><div class="track"><div class="fill" style="width:${ch.Zalo/maxMarket*100}%"></div></div><div class="val">${ch.Zalo}</div></div>
+        <div class="bar-row"><div class="lb">LINE</div><div class="track"><div class="fill" style="width:${ch.LINE/maxMarket*100}%"></div></div><div class="val">${ch.LINE}</div></div>
+        <div class="bar-row"><div class="lb">KakaoTalk</div><div class="track"><div class="fill" style="width:${ch.KakaoTalk/maxMarket*100}%"></div></div><div class="val">${ch.KakaoTalk}</div></div>
+      </div>
+      <div class="chart-card"><h3>🔀 等级 × 市场交叉</h3>
+        <table class="tbl"><tr><th>市场</th><th>A级</th><th>B级</th><th>C级</th><th>合计</th></tr>${crossRows}</table>
+      </div>
+      <div class="chart-card"><h3>📅 每日新增趋势</h3>
+        <div class="trend-wrap"><table class="tbl"><tr><th>日期</th><th>当日新增</th><th>累计</th></tr>${trendRows}</table></div>
+      </div>
+    </div>`;
+}
+
+// ===== 视图：发信队列 =====
+function renderSendlist(){
+  const list = filtered().filter(c=>(c["邮箱"]||"").includes("@"));
+  const rows = list.map((c,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><span class="pill ${c["等级"]}">${c["等级"]}</span></td>
+      <td>${esc(c["公司名"])}</td>
+      <td>${esc(c["国家"])}</td>
+      <td><a href="mailto:${esc(c["邮箱"])}" style="color:var(--accent)">${esc(c["邮箱"])}</a></td>
+      <td><button class="copy" onclick="copyText('${esc(c._key)}','email',this)">复制邮件</button></td>
+      <td><button class="sent ${c["已发送"]?'on':''}" onclick="toggleSent(this,'${esc(c._key)}')">${c["已发送"]?'已发送':'未发'}</button></td>
+    </tr>`).join("");
+  $("#content").innerHTML = statbar(list) + `
+    <div class="chart-card" style="grid-column:1/-1">
+      <h3>✉️ 可发邮件客户（${list.length} 家）</h3>
+      <table class="tbl"><tr><th>#</th><th>等级</th><th>公司</th><th>市场</th><th>邮箱</th><th>邮件</th><th>状态</th></tr>${rows||'<tr><td colspan="7">无可发邮件客户</td></tr>'}</table>
+    </div>`;
+}
+
+// ===== 视图：批量发送 =====
+let BS = { selected:new Set(), progressTimer:null, testEmail:"" };
+
+function bulksendList(){
+  // 有邮箱、未发送、有邮件正文的客户
+  return filtered().filter(c=>(c["邮箱"]||"").includes("@") && !c["已发送"] && ((c["email_body"]||c["email_body_cn"])));
+}
+
+function renderBulkSend(){
+  const list = bulksendList();
+  BS.selected = new Set([...BS.selected].filter(k=>list.some(c=>c._key===k)));
+  const rows = list.map((c,i)=>{
+    const chk = BS.selected.has(c._key) ? "checked" : "";
+    return `<tr>
+      <td><input type="checkbox" class="bs-chk" data-key="${esc(c._key)}" ${chk} onchange="bsToggle('${esc(c._key)}',this.checked)"></td>
+      <td>${i+1}</td>
+      <td><span class="pill ${c["等级"]}">${c["等级"]}</span></td>
+      <td>${esc(c["公司名"])}</td>
+      <td>${esc(c["国家"])}</td>
+      <td>${esc(c["邮箱"])}</td>
+      <td>${esc(c["email_subject"]||"—")}</td>
+    </tr>`;
+  }).join("");
+
+  $("#content").innerHTML = `
+    <div class="bs-panel">
+      <div class="bs-config">
+        <h3>🔑 发件邮箱配置</h3>
+        <div class="bs-form">
+          <label>发件邮箱（Gmail 等）
+            <input id="bsUser" placeholder="you@gmail.com">
+          </label>
+          <label>授权码 / 应用专用密码
+            <input id="bsPass" type="password" placeholder="16 位应用专用密码">
+          </label>
+          <label>发件人显示名（可选）
+            <input id="bsName" placeholder="如 Color Masterbatch">
+          </label>
+          <label>SMTP 服务器（留空自动识别）
+            <input id="bsHost" placeholder="如 smtp.gmail.com">
+          </label>
+        </div>
+        <div class="bs-actions">
+          <button class="primary" onclick="bsSaveCfg()">保存配置</button>
+          <button onclick="bsTestEmail()">试发测试邮件</button>
+        </div>
+        <div class="bs-note" style="margin-top:10px">
+          测试邮件默认发到 <b>发件邮箱自己</b>，用于验证授权码是否有效。Gmail 请使用「应用专用密码」，不是登录密码。
+        </div>
+      </div>
+
+      <div class="bs-config">
+        <h3>📮 待发客户（${list.length} 家，已选 ${BS.selected.size} 家）</h3>
+        <div class="bs-actions" style="margin-bottom:10px">
+          <button onclick="bsSelectAll(true)">全选</button>
+          <button onclick="bsSelectAll(false)">全不选</button>
+          <button onclick="bsSelectA()">选 A 级未发</button>
+          <button class="primary" onclick="bsStart()">🚀 一键发送所选（${BS.selected.size} 家）</button>
+          <button onclick="bsStartFirst(3)">小批试发 3 家</button>
+        </div>
+        <div class="bs-form" style="grid-template-columns:auto 1fr">
+          <label style="min-width:180px">每封间隔（秒，防判垃圾邮件）
+            <input id="bsInterval" type="number" value="10" min="1" max="120">
+          </label>
+        </div>
+        <div style="margin-top:12px">
+          <div class="bs-progress"><div class="bar" id="bsBar"></div><div class="txt" id="bsProgTxt">未开始</div></div>
+        </div>
+        <div class="bs-results" id="bsResults"></div>
+        <table class="tbl" style="margin-top:12px">
+          <tr><th></th><th>#</th><th>等级</th><th>公司</th><th>市场</th><th>邮箱</th><th>邮件主题</th></tr>
+          ${rows||'<tr><td colspan="7">无可发客户（需有邮箱、未发送、且已有开发信内容）</td></tr>'}
+        </table>
+      </div>
+    </div>`;
+
+  // 回填已保存配置
+  api("/api/smtp").then(r=>{
+    const d = r.data||{};
+    $("#bsUser").value = d.user||"";
+    $("#bsPass").value = d.pass||"";
+    $("#bsName").value = d.from_name||"";
+    $("#bsHost").value = d.host||"";
+  });
+  bsRefreshProgress();
+}
+
+function bsToggle(key, on){
+  if(on) BS.selected.add(key); else BS.selected.delete(key);
+  // 更新计数显示（简单重渲染标题区）
+  const list = bulksendList();
+  const h3 = document.querySelector(".bs-config:nth-child(2) h3");
+  if(h3) h3.textContent = `📮 待发客户（${list.length} 家，已选 ${BS.selected.size} 家）`;
+  const btn = document.querySelector("button.primary[onclick^='bsStart']");
+  if(btn) btn.textContent = `🚀 一键发送所选（${BS.selected.size} 家）`;
+}
+
+function bsSelectAll(on){
+  const list = bulksendList();
+  BS.selected = on ? new Set(list.map(c=>c._key)) : new Set();
+  renderBulkSend();
+}
+function bsSelectA(){
+  const list = bulksendList().filter(c=>c["等级"]==="A");
+  BS.selected = new Set(list.map(c=>c._key));
+  renderBulkSend();
+}
+
+async function bsSaveCfg(){
+  const cfg = {
+    user: $("#bsUser").value.trim(),
+    pass: $("#bsPass").value.trim(),
+    from_name: $("#bsName").value.trim(),
+    host: $("#bsHost").value.trim(),
+  };
+  if(!cfg.user){ toast("请填写发件邮箱"); return; }
+  const r = await api("/api/smtp", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+  toast(r.ok ? "配置已保存" : "保存失败");
+}
+
+async function bsTestEmail(){
+  const to = BS.testEmail || $("#bsUser").value.trim();
+  toast("正在发送测试邮件…");
+  const r = await api("/api/send-test", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to})});
+  toast(r.ok ? "测试邮件已发送 ✓" : ("发送失败："+(r.msg||"未知错误")));
+}
+
+async function bsStart(){
+  const keys = [...BS.selected];
+  if(!keys.length){ toast("请先勾选要发送的客户"); return; }
+  const interval = parseInt($("#bsInterval").value)||10;
+  const r = await api("/api/send", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keys, interval})});
+  if(!r.ok){ toast("启动失败："+r.msg); return; }
+  toast("已开始批量发送…");
+  bsRefreshProgress(true);
+}
+
+async function bsStartFirst(n){
+  const list = bulksendList();
+  const keys = list.slice(0, n).map(c=>c._key);
+  if(!keys.length){ toast("没有可发送的客户"); return; }
+  const interval = parseInt($("#bsInterval").value)||10;
+  const r = await api("/api/send", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keys, interval})});
+  if(!r.ok){ toast("启动失败："+r.msg); return; }
+  toast(`开始小批试发 ${keys.length} 家…`);
+  bsRefreshProgress(true);
+}
+
+function bsRefreshProgress(loop){
+  api("/api/send-progress").then(r=>{
+    const p = r.data||{};
+    const total = p.total||0, done = p.done||0;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const bar = $("#bsBar"); if(bar) bar.style.width = pct+"%";
+    const txt = $("#bsProgTxt");
+    if(txt){
+      if(p.running) txt.textContent = `发送中 ${done}/${total}（成功 ${p.ok||0}，失败 ${p.fail||0}）`;
+      else if(total) txt.textContent = `已完成：成功 ${p.ok||0} / 失败 ${p.fail||0} / 共 ${total}`;
+      else txt.textContent = "未开始";
+    }
+    const box = $("#bsResults");
+    if(box && p.results && p.results.length){
+      box.innerHTML = p.results.map(x=>`
+        <div class="bs-res ${x.ok?'ok':'fail'}">${x.ok?'✅':'❌'} ${esc(x.name)}<span class="em">${esc(x.email)}${x.ok?'':' — '+esc(x.msg)}</span></div>
+      `).join("");
+    }
+    if(p.running){
+      clearTimeout(BS.progressTimer);
+      BS.progressTimer = setTimeout(()=>bsRefreshProgress(true), 1500);
+    } else if(loop && total){
+      // 完成后刷新数据
+      api("/api/customers").then(res=>{ ALL = res.data; fillDropdowns(); renderBulkSend(); });
+    }
+  });
+}
+
+// ===== 视图：获客发现 =====
+let DS = { progressTimer:null };
+
+function renderDiscover(){
+  $("#content").innerHTML = `
+    <div class="ds-panel">
+      <div class="bs-config">
+        <h3>🔍 多渠道获客发现（全免费）</h3>
+        <div class="ds-form">
+          <label>产品关键词（逗号分隔）
+            <input id="dsQueries" value="color masterbatch,injection molding" placeholder="color masterbatch, colorant, injection molding">
+          </label>
+          <label>目标市场（maps/web 需要）
+            <input id="dsMarket" value="美国" placeholder="美国 / 越南 / 印尼 / 土耳其…">
+          </label>
+          <label>验证数量上限（0=全部）
+            <input id="dsLimit" type="number" value="20" min="0" max="200">
+          </label>
+        </div>
+        <div class="ds-chk-row" style="margin-top:12px">
+          <label><input type="checkbox" id="dsChkCustoms" checked> 🚢 海关数据（ImportYeti·美国）</label>
+          <label><input type="checkbox" id="dsChkMaps" checked> 🗺️ 谷歌地图</label>
+          <label><input type="checkbox" id="dsChkWeb" checked> 🌐 浏览器搜索（目录/黄页）</label>
+          <label><input type="checkbox" id="dsChkVerify" checked> ✅ 同步验证（补官网/邮箱/WhatsApp/联系人）</label>
+        </div>
+        <div class="bs-actions" style="margin-top:12px">
+          <button class="primary" onclick="dsStart()">🚀 开始发现</button>
+          <button onclick="dsStop()" style="display:none" id="dsStopBtn">停止</button>
+        </div>
+        <div class="bs-note" style="margin-top:10px">
+          海关数据只覆盖<b>美国海运</b>；地图/浏览器搜需填<b>目标市场</b>。首次运行会在你 Chrome 弹「Allow」授权，点一次即可。抓到的买家自动补全官网/邮箱/WhatsApp/联系人。
+        </div>
+      </div>
+
+      <div class="bs-config">
+        <h3 id="dsProgHd">📡 运行状态</h3>
+        <div style="margin-top:10px">
+          <div class="bs-progress"><div class="bar" id="dsBar"></div><div class="txt" id="dsProgTxt">未开始</div></div>
+        </div>
+        <div class="ds-log" id="dsLog" style="margin-top:12px">等待启动…</div>
+        <div id="dsResults" style="margin-top:14px"></div>
+      </div>
+    </div>`;
+
+  dsRefreshProgress();
+}
+
+function dsGetChannels(){
+  const ch = [];
+  if($("#dsChkCustoms").checked) ch.push("customs");
+  if($("#dsChkMaps").checked) ch.push("maps");
+  if($("#dsChkWeb").checked) ch.push("web");
+  return ch;
+}
+
+async function dsStart(){
+  const queries = ($("#dsQueries").value||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const market = ($("#dsMarket").value||"").trim();
+  const channels = dsGetChannels();
+  const verify = $("#dsChkVerify").checked;
+  const limit = parseInt($("#dsLimit").value)||0;
+  if(!queries.length){ toast("请填写产品关键词"); return; }
+  if(!channels.length){ toast("请至少勾选一个渠道"); return; }
+  if((channels.includes("maps")||channels.includes("web")) && !market){ toast("地图/浏览器搜需要填写目标市场"); return; }
+  const r = await api("/api/discover", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({queries, market, channels, verify, limit})});
+  if(!r.ok){ toast("启动失败："+r.msg); return; }
+  toast("已启动获客发现…");
+  dsRefreshProgress(true);
+}
+
+function dsStop(){
+  // 停止 = 仅停止前端轮询（后端任务在浏览器 Chrome 授权前不占用，这里保留占位）
+  clearTimeout(DS.progressTimer);
+  toast("已停止刷新（后端任务仍在后台，如需终止请关闭 Chrome 授权或重启工作台）");
+}
+
+function dsRefreshProgress(loop){
+  api("/api/discover-progress").then(r=>{
+    const p = r.data||{};
+    const bar = $("#dsBar"), txt = $("#dsProgTxt");
+    if(txt){
+      if(p.running){
+        const phaseName = {start:"准备中",customs:"海关搜",maps:"地图搜",web:"浏览器搜",verify:"同步验证"}[p.phase] || p.phase;
+        txt.textContent = p.phase==="verify" ? `${phaseName} ${p.done||0}/${p.total||0}` : `${phaseName}…`;
+      } else if(p.total) txt.textContent = `已完成：共 ${p.total} 家`;
+      else txt.textContent = "未开始";
+    }
+    if(bar) bar.style.width = (p.phase==="verify" && p.total) ? Math.round((p.done||0)/p.total*100)+"%" : (p.running?"8%":"0%");
+
+    // 日志
+    const log = $("#dsLog");
+    if(log && p.logs && p.logs.length){
+      log.innerHTML = p.logs.map(l=>`<div><span class="t">${esc(l.t)}</span>${esc(l.msg)}</div>`).join("");
+      log.scrollTop = log.scrollHeight;
+    }
+    // 结果
+    const box = $("#dsResults");
+    if(box && p.results && p.results.length){
+      box.innerHTML = `<div style="font-weight:700;font-size:13px;margin-bottom:8px">📋 发现结果（${p.results.length} 家）${p.outfile?`<span style="color:var(--muted);font-weight:400;font-size:11px"> — 已存 ${esc(p.outfile)}</span>`:''}</div>` +
+        p.results.map(x=>{
+          const site = x.site||"", emails = x.emails||[], wa = x.whatsapp||"", contact = x.contact||"";
+          return `<div class="ds-res-row">
+            <div style="flex:1;min-width:0">
+              <div class="nm">${esc(x.name)}<span class="src">${esc(x.src||"")}·${esc(x.country||"")}</span></div>
+              <div class="meta">
+                ${site?`🌐 <a href="${esc(site)}" target="_blank">${esc(site)}</a>`:'<span class="ds-badge no">无官网</span>'}
+                ${emails.length?`<br>✉️ ${emails.map(e=>esc(e)).join("， ")}`:'<span class="ds-badge no">无邮箱</span>'}
+                ${wa?`<br>💬 WhatsApp <a href="https://wa.me/${esc(wa.replace(/[^0-9]/g,''))}" target="_blank">${esc(wa)}</a>`:'<span class="ds-badge no">无WA</span>'}
+                ${contact?`<br>👤 <a href="${esc(contact)}" target="_blank">${esc(contact)}</a>`:''}
+              </div>
+            </div>
+          </div>`;
+        }).join("");
+    } else if(box && !p.running && p.total){
+      box.innerHTML = `<div style="color:var(--muted);font-size:12.5px">本次未开启「同步验证」，结果仅含买家名单（已存文件）。</div>`;
+    }
+
+    if(p.running){
+      clearTimeout(DS.progressTimer);
+      DS.progressTimer = setTimeout(()=>dsRefreshProgress(true), 2000);
+    }
+  });
+}
+
+// ===== 视图：WhatsApp =====
+let WA_LIST = [];
+
+async function renderWhatsApp(){
+  $("#content").innerHTML = '<div class="empty">加载中…</div>';
+  const r = await api("/api/wa");
+  WA_LIST = r.data || [];
+  $("#navWa").textContent = WA_LIST.length;
+  const cards = WA_LIST.map(c=>{
+    const wa = c["WhatsApp"];
+    const waLink = `https://wa.me/${wa}`;
+    return `
+    <div class="wa-card g${c["等级"]}">
+      <div class="wa-left">
+        <a class="wa-btn" href="${waLink}" target="_blank" rel="noopener">💬 加 WhatsApp</a>
+        <button class="wa-note-btn" onclick="copyText2('${esc(c["备注"])}',this)">📋 复制备注</button>
+        <div class="wa-note-box">备注：${esc(c["备注"])}</div>
+      </div>
+      <div class="wa-body">
+        <div class="wa-nm"><span class="pill ${c["等级"]}">${c["等级"]}</span>${esc(c["公司名"])}<span style="color:var(--muted);font-weight:400;font-size:12px">${esc(c["国家"])}</span></div>
+        <div class="wa-meta">📞 ${esc(c["WhatsApp"])}${c["联系人"]?' · 👤 '+esc(c["联系人"]):''} · ${esc(c["行业"])}</div>
+        <div class="wa-opener">
+          ${esc(c["开场白"]||"—")}
+          <div class="cn">${esc(c["开场白_cn"]||"—")}</div>
+        </div>
+        <div class="wa-opener-acts">
+          <button class="wa-copy" onclick="copyText2('${esc(c["开场白"]||"")}',this)">复制开场白</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  $("#content").innerHTML = `
+    <div class="bs-note" style="margin-bottom:14px">
+      💬 点「加 WhatsApp」直接跳转添加好友；点「复制备注」复制<b>公司+产品</b>备注，加好友后粘贴。开场白在旁边，点「复制开场白」一键复制发送。共 <b>${WA_LIST.length}</b> 家可触达。
+    </div>
+    <div class="wa-list">${cards||'<div class="empty">暂无有 WhatsApp 号的客户</div>'}</div>`;
+}
+
+async function copyText2(txt, btn){
+  try{
+    await navigator.clipboard.writeText(txt);
+    const o = btn.textContent; btn.textContent = "✓ 已复制";
+    setTimeout(()=>btn.textContent=o, 1200);
+  }catch(e){
+    // 降级：老式复制
+    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta);
+    toast("已复制");
+  }
+}
+
+// ===== 视图：当天新客户 =====
+let DAILY = [];
+let DAILY_SEL = new Set();
+
+async function renderDaily(){
+  $("#content").innerHTML = '<div class="empty">加载当天新客户…</div>';
+  const r = await api("/api/daily");
+  DAILY = r.data || [];
+
+  // 按日期分组
+  const byDate = {};
+  DAILY.forEach(c=>{ (byDate[c.date] = byDate[c.date]||[]).push(c); });
+  const dates = Object.keys(byDate).sort().reverse();
+
+  // 统计
+  const newCount = DAILY.filter(c=>!c.in_pool).length;
+  const inCount = DAILY.filter(c=>c.in_pool).length;
+  const waCount = DAILY.filter(c=>hasRealWA(c.whatsapp)).length;
+  const fuCount = DAILY.filter(c=>(c.followup||"未联系")!=="未联系").length;
+  const unFuCount = DAILY.length - fuCount;
+  $("#navDaily").textContent = newCount;
+  const waPct = DAILY.length ? Math.round(waCount/DAILY.length*100) : 0;
+  const fuPct = DAILY.length ? Math.round(fuCount/DAILY.length*100) : 0;
+
+  const fmtDate = d => d.length===8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : d;
+
+  let html = `
+    <div class="daily-actions-bar">
+      <button class="primary" onclick="dailySelectNew(true)">全选未入库（${newCount}）</button>
+      <button onclick="dailySelectNew(false)">清空选择</button>
+      <button class="primary" style="background:var(--green);border-color:var(--green)" onclick="dailyMerge()">📥 并入总池（${DAILY_SEL.size}）</button>
+    </div>
+    <div class="daily-stats">
+      <div class="daily-stat"><span class="k">今日客户</span><span class="v">${DAILY.length}</span></div>
+      <div class="daily-stat"><span class="k">📱 有 WhatsApp</span><span class="v wa">${waCount} <span style="font-size:12px;color:var(--muted)">${waPct}%</span></span><div class="bar"><i style="width:${waPct}%;background:var(--green)"></i></div></div>
+      <div class="daily-stat"><span class="k">✅ 已跟进</span><span class="v fu">${fuCount} <span style="font-size:12px;color:var(--muted)">${fuPct}%</span></span><div class="bar"><i style="width:${fuPct}%;background:var(--cyan)"></i></div></div>
+      <div class="daily-stat"><span class="k">⏳ 待跟进</span><span class="v un">${unFuCount}</span></div>
+    </div>
+    <div class="bs-note" style="margin-bottom:14px">
+      📥 <b>当天新客户</b>：每天抓取的客户自动出现在这里，先在当天页面操作/跟进，确认有效后再「并入总池」。<br>
+      当前共 <b>${DAILY.length}</b> 家 · 未入库 <b style="color:var(--amber)">${newCount}</b> 家 · 已入库 <b style="color:var(--green)">${inCount}</b> 家。
+    </div>`;
+
+  for(const date of dates){
+    const list = byDate[date];
+    const nin = list.filter(c=>!c.in_pool).length;
+    const dwa = list.filter(c=>hasRealWA(c.whatsapp)).length;
+    const dfu = list.filter(c=>(c.followup||"未联系")!=="未联系").length;
+    html += `
+    <div class="daily-day">
+      <div class="daily-day-hd">
+        <span class="dt">📅 ${fmtDate(date)}</span>
+        <span class="badge-out">${nin} 未入库</span>
+        <span class="badge-in">${list.length-nin} 已入库</span>
+        <span class="daily-day-stat">📱WA ${dwa} · ✅已跟进 ${dfu}/${list.length}</span>
+      </div>
+      ${list.map(c=>dailyRow(c)).join("")}
+    </div>`;
+  }
+
+  $("#content").innerHTML = html || '<div class="empty">暂无当天新客户数据</div>';
+  DAILY_SEL = new Set([...DAILY_SEL].filter(k=>DAILY.some(c=>c._key===k)));
+}
+
+function hasRealWA(wa){
+  wa = (wa||"").trim();
+  if(!wa) return false;
+  if(wa.startsWith("待") || wa.startsWith("该市场")) return false;
+  if(!/\d/.test(wa)) return false;
+  const clean = wa.replace(/[^\d+]/g,'');
+  return clean.length >= 8;
+}
+
+function dailyRow(c){
+  const chk = DAILY_SEL.has(c._key) ? "checked" : "";
+  const inPool = c.in_pool;
+  const wa = (c.whatsapp||"").trim();
+  const waClean = wa.replace(/[^\d+]/g,'');
+  const hasWA = hasRealWA(wa);
+  const fu = c.followup || "未联系";
+  const followed = fu !== "未联系";
+  return `
+    <div class="daily-row g${c.grade||'C'}">
+      <input type="checkbox" class="chk" ${chk} ${inPool?'disabled':''} onchange="dailyToggle('${esc(c._key)}',this.checked)">
+      <div class="daily-info">
+        <div class="daily-nm"><span class="pill ${c.grade||'C'}">${c.grade||'C'}</span> ${esc(c.name)} ${inPool?'<span style="color:var(--green);font-size:11px">✓ 已入库</span>':'<span style="color:var(--amber);font-size:11px">○ 待入库</span>'}</div>
+        <div class="daily-meta">${esc(c.country||'')} · ${esc(c.industry||'')} · 总分${c.total||0}</div>
+        <div class="daily-meta" style="color:var(--txt)">${esc((c.products||'').slice(0,60))||'—'}</div>
+      </div>
+      <div class="daily-acts">
+        <span class="daily-fu ${followed?'yes':'no'}">${followed?'✓ 已跟进':'○ 未跟进'}</span>
+        <button class="fu-btn sent ${followed?'on':''}" onclick="dailyFollowup('${esc(c._key)}', '${esc(c.name)}', '${esc(c.country||'')}', ${followed?'true':'false'}, this)">${followed?'已跟进':'一键已跟进'}</button>
+        ${hasWA?`<span class="daily-wa-yes">📱 有WA</span><a class="wa-btn" style="padding:6px 12px;font-size:12px" href="https://wa.me/${esc(waClean)}" target="_blank" rel="noopener">💬 一键导航</a>`:`<span class="daily-wa-no">📱 无WA</span>`}
+        ${c.email?`<a href="mailto:${esc(c.email)}" style="color:var(--accent);text-decoration:none">✉️</a>`:''}
+        ${c.wa_opener?`<button class="wa-copy" onclick="copyText2('${esc(c.wa_opener)}',this)">复制开场白</button>`:''}
+      </div>
+    </div>`;
+}
+
+async function dailyFollowup(key, name, country, followed, btn){
+  // 一键切换：未跟进 -> 已发信；已跟进 -> 未联系
+  const next = followed ? "未联系" : "已发信";
+  const r = await api("/api/daily-status", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key, name, country, status:next})});
+  if(r.ok){
+    // 本地更新当前 DAILY 里对应项，再局部刷新该行
+    const item = DAILY.find(x=>x._key===key);
+    if(item) item.followup = next;
+    renderDaily();
+    toast(followed ? "已取消跟进" : "✓ 已跟进");
+    // 若已入库，同步刷新总池客户列表
+    if(item && item.in_pool){ api("/api/customers").then(res=>{ ALL = res.data; fillDropdowns(); }); }
+  } else {
+    toast("操作失败：" + (r.msg||"未知错误"));
+  }
+}
+
+function dailyToggle(key, on){
+  if(on) DAILY_SEL.add(key); else DAILY_SEL.delete(key);
+  const btn = document.querySelector("button[onclick^='dailyMerge']");
+  if(btn) btn.textContent = `📥 并入总池（${DAILY_SEL.size}）`;
+}
+
+function dailySelectNew(on){
+  if(on) DAILY_SEL = new Set(DAILY.filter(c=>!c.in_pool).map(c=>c._key));
+  else DAILY_SEL = new Set();
+  renderDaily();
+}
+
+async function dailyMerge(){
+  const keys = [...DAILY_SEL];
+  if(!keys.length){ toast("请先勾选要入库的客户"); return; }
+  if(!confirm(`确认将 ${keys.length} 家客户并入总池？\n（自动去重，已有信息不覆盖）`)) return;
+  toast("正在并入总池…");
+  const r = await api("/api/merge-pool", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keys, commit:true})});
+  if(r.ok){
+    toast(`入库完成：新增 ${r.stats.added} · 合并 ${r.stats.merged} · 跳过 ${r.stats.skipped}`);
+    // 刷新总池客户列表
+    api("/api/customers").then(res=>{ ALL = res.data; fillDropdowns(); });
+    renderDaily();
+  } else {
+    toast("入库失败：" + (r.msg||"未知错误"));
+  }
+}
+
+// ===== 视图：待跟进客户 =====
+function todoList(){
+  return ALL.filter(c=>(c["跟进状态"]||"未联系")==="未联系")
+           .sort((a,b)=>{const o={"A":0,"B":1,"C":2}; return (o[a["等级"]]??3)-(o[b["等级"]]??3) || (parseInt(b["总分"]||0)-parseInt(a["总分"]||0));});
+}
+
+function renderTodo(){
+  const list = todoList();
+  const waN = list.filter(c=>hasRealWA(c["WhatsApp"])).length;
+  const emN = list.filter(c=>(c["邮箱"]||"").includes("@")).length;
+  const cards = list.map(c=>{
+    const g = c["等级"]||"C";
+    const hasEmail = (c["邮箱"]||"").includes("@");
+    const waNum = hasRealWA(c["WhatsApp"]) ? (c["WhatsApp"]||"").trim().replace(/[^\d+]/g,'') : "";
+    return `
+    <div class="todo-row g${g}">
+      <div class="todo-info">
+        <div class="todo-nm"><span class="pill ${g}">${g}</span>${esc(c["公司名"]||"?")}<span style="color:var(--muted);font-weight:400;font-size:12px">${esc(c["国家"]||"")}</span></div>
+        <div class="todo-meta">🏭 ${esc(c["行业"]||"—")} · 📍 ${esc(c["城市"]||"—")} · 总分${esc(c["总分"]||"—")}${c["联系人"]?' · 👤 '+esc(c["联系人"])+' '+esc(c["职位"]||""):''}</div>
+        ${(c["官网产品"]||"").trim()?`<div class="todo-prod">🧬 ${esc(c["官网产品"])}</div>`:''}
+      </div>
+      <div class="todo-acts">
+        ${hasEmail?`<a class="btn-mail" href="mailto:${esc(c["邮箱"])}?subject=${encodeURIComponent(c["email_subject"]||"Colour masterbatch for your production")}&body=${encodeURIComponent(c["email_body"]||"")}" target="_blank">✉️ 一键发邮件</a>`:`<span class="todo-empty-acts">✉️ 无邮箱</span>`}
+        ${waNum?`<a class="wa-btn" style="padding:7px 12px;font-size:12px" href="https://wa.me/${esc(waNum)}" target="_blank" rel="noopener">💬 加 WhatsApp</a>`:`<span class="todo-empty-acts">💬 无WA</span>`}
+        <button class="fu-btn sent" onclick="todoMarkFollowed('${esc(c._key)}', this)">✅ 一键已跟进</button>
+        ${c["wa_opener"]?`<button class="wa-copy" onclick="copyText2('${esc(c["wa_opener"])}',this)">复制开场白</button>`:''}
+      </div>
+    </div>`;
+  }).join("");
+  $("#content").innerHTML = `
+    <div class="bs-note" style="margin-bottom:14px">
+      ⏳ <b>待跟进客户</b>：把「跟进状态 = 未联系」的客户集中在这里，按 A→B→C 排序，防止当天太忙漏掉、第二天找不到。<br>
+      共 <b style="color:var(--amber)">${list.length}</b> 家待跟进 · 其中可发邮件 <b style="color:var(--cyan)">${emN}</b> 家 · 有 WhatsApp <b style="color:var(--green)">${waN}</b> 家。
+    </div>
+    <div class="todo-list">${cards||'<div class="empty">🎉 太棒了，没有待跟进客户！</div>'}</div>`;
+}
+
+async function todoMarkFollowed(key, btn){
+  const c = ALL.find(x=>x._key===key);
+  if(!c) return;
+  const r = await api("/api/status", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key,status:"已发信"})});
+  if(r.ok){
+    c["跟进状态"] = "已发信";
+    fillDropdowns();
+    renderTodo();
+    toast("✓ 已跟进：" + c["公司名"]);
+  } else {
+    toast("失败：" + r.msg);
+  }
+}
+
+// ===== 视图：已剔除（无联系方式） =====
+async function renderRejected(){
+  const r = await api("/api/rejected");
+  const list = r.data || [];
+  // 按等级 A→B→C、总分降序
+  const order = {A:0,B:1,C:2};
+  list.sort((a,b)=>(order[a["等级"]]??3)-(order[b["等级"]]??3) || (parseInt(b["总分"]||"0")-parseInt(a["总分"]||"0")));
+  const byCountry = {};
+  list.forEach(c=>{ const k=c["国家"]||"—"; byCountry[k]=(byCountry[k]||0)+1; });
+  const countryStr = Object.entries(byCountry).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k} ${v}`).join(" · ");
+  const cards = list.map(c=>{
+    const g = c["等级"]||"C";
+    const em = (c["邮箱"]||"").trim();
+    const wa = (c["WhatsApp"]||"").trim();
+    // 显示为什么被剔除：邮箱和社交都是占位/空
+    const reason = (!em? "无邮箱" : (em.includes("待")||em.includes("官网表单")||em.includes("未获取")) ? `邮箱占位「${em}」` : "无有效邮箱")
+      + " 且 " + (!wa? "无WhatsApp" : (wa.includes("待验证")||wa.includes("该市场")) ? `WhatsApp占位` : "无有效社交");
+    return `
+    <div class="todo-row g${g}" style="opacity:.82">
+      <div class="todo-info">
+        <div class="todo-nm"><span class="pill ${g}">${g}</span>${esc(c["公司名"]||"?")}<span style="color:var(--muted);font-weight:400;font-size:12px">${esc(c["国家"]||"")}</span></div>
+        <div class="todo-meta">🏭 ${esc(c["行业"]||"—")} · 📍 ${esc(c["城市"]||"—")} · 总分${esc(c["总分"]||"—")}</div>
+        <div class="todo-meta" style="color:var(--amber)">🗑 剔除原因：${esc(reason)}</div>
+        ${(c["官网"]||"").trim()?`<div class="todo-meta">🌐 <a href="${esc(c["官网"])}" target="_blank" style="color:var(--accent)">${esc(c["官网"])}</a></div>`:''}
+      </div>
+      <div class="todo-acts">
+        <span class="todo-empty-acts">✉️ 无邮箱</span>
+        <span class="todo-empty-acts">💬 无WA</span>
+      </div>
+    </div>`;
+  }).join("");
+  $("#content").innerHTML = `
+    <div class="bs-note" style="margin-bottom:14px">
+      🗑️ <b>已剔除客户（无联系方式）</b>：这些客户「既无有效邮箱、又无 WhatsApp/社交账号」，已从总池移出，保留在此供你复核。<br>
+      共 <b style="color:var(--amber)">${list.length}</b> 家 · ${countryStr}。<br>
+      <span style="color:var(--muted);font-size:12px">想跟进某家？点官网链接进去找邮箱/WhatsApp，挖到后再手动放回总池即可（不要重新抓）。</span>
+    </div>
+    <div class="todo-list">${cards||'<div class="empty">没有剔除客户</div>'}</div>`;
+}
+
+// ===== 视图：跟进记录 =====
+function renderFollowup(){
+  const list = filtered().filter(c=>c["已发送"] || (c["跟进状态"]||"未联系")!=="未联系");
+  const rows = list.map(c=>`
+    <tr>
+      <td>${esc(c["公司名"])}</td>
+      <td>${esc(c["国家"])}</td>
+      <td><span class="pill ${c["等级"]}">${c["等级"]}</span></td>
+      <td>${esc(c["跟进状态"]||"未联系")}</td>
+      <td>${c["本地更新时间"]?esc(c["本地更新时间"]):"（未更新）"}</td>
+      <td>${c["已发送"]?'✓':''}</td>
+    </tr>`).join("");
+  $("#content").innerHTML = `
+    <div class="chart-card" style="grid-column:1/-1">
+      <h3>📋 跟进记录（${list.length} 条）</h3>
+      <table class="tbl"><tr><th>公司</th><th>市场</th><th>等级</th><th>状态</th><th>更新时间</th><th>已发送</th></tr>${rows||'<tr><td colspan="6">暂无跟进记录，去客户列表点选状态即可</td></tr>'}</table>
+    </div>`;
+}
+
+// ===== 视图：数据导出 =====
+function renderExport(){
+  const list = filtered();
+  $("#content").innerHTML = `
+    <div class="analytics">
+      <div class="chart-card">
+        <h3>📤 导出当前筛选结果</h3>
+        <p style="color:var(--muted);margin-bottom:14px">当前筛选下共 <b style="color:var(--txt)">${list.length}</b> 家客户。导出为 CSV 文件，可在 Excel 打开。</p>
+        <button class="primary" onclick="exportCSV()">导出 CSV</button>
+        <button class="primary" style="margin-left:8px" onclick="exportMailList()">导出邮箱清单</button>
+      </div>
+      <div class="chart-card">
+        <h3>💡 数据说明</h3>
+        <div style="line-height:1.8;color:var(--muted);font-size:13px">
+          所有数据保存在本地：<br>
+          · 客户数据：<code>master-lead-pool.csv</code><br>
+          · 跟进状态：<code>workbench.db</code>（SQLite）<br>
+          · 开发信内容：<code>logs/_leads_*.json</code><br>
+          <br>状态点选即落盘，换浏览器/重启都不丢失。
+        </div>
+      </div>
+    </div>`;
+}
+
+function exportCSV(){
+  const list = filtered();
+  const fields = ["排名","国家","公司名","行业","城市","总分","等级","官网","邮箱","电话","联系人","职位","WhatsApp","Zalo","LINE","KakaoTalk","官网产品","跟进状态","最后联系日","切入建议","来源"];
+  const head = fields.join(",");
+  const rows = list.map(c=>fields.map(f=>`"${(c[f]||"").replace(/"/g,'""')}"`).join(","));
+  const csv = "\ufeff" + [head, ...rows].join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `客户导出_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast("已导出 " + list.length + " 家");
+}
+
+function exportMailList(){
+  const list = filtered().filter(c=>(c["邮箱"]||"").includes("@"));
+  const rows = list.map(c=>`"${c["公司名"]}","${c["邮箱"]}"`).join("\n");
+  const csv = "\ufeff公司名,邮箱\n" + rows;
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `邮箱清单_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast("已导出 " + list.length + " 个邮箱");
+}
+
+// ===== 交互 =====
+async function setStatus(key, status){
+  const r = await api("/api/status", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key,status})});
+  if(r.ok){ ALL.forEach(c=>{ if(c._key===key) c["跟进状态"]=status; }); render(); toast("已保存："+status); }
+  else toast("失败："+r.msg);
+}
+async function toggleSent(btn, key){
+  const cur = ALL.find(c=>c._key===key);
+  const next = !(cur["已发送"]);
+  const r = await api("/api/sent", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key,sent:next})});
+  if(r.ok){ cur["已发送"]=next; render(); fillDropdowns(); toast(next?"已标记发送":"已取消发送"); }
+  else toast("失败");
+}
+function toggleDetail(btn){
+  btn.closest(".card").querySelector(".detail").classList.toggle("open");
+}
+function openCustomer(key){
+  // 跳转到客户列表并定位该客户
+  switchView("customers");
+  clearFilters();
+  // 高亮定位：临时把该客户排最前（简单做法：搜索该公司名）
+  const c = ALL.find(x=>x._key===key);
+  if(c){
+    sel.q = c["公司名"].split("(")[0].trim().toLowerCase();
+    $("#q").value = c["公司名"].split("(")[0].trim();
+    render();
+  }
+}
+async function markSentQuick(key, btn){
+  const c = ALL.find(x=>x._key===key);
+  if(!c) return;
+  const r = await api("/api/status", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key,status:"已发信"})});
+  if(r.ok){
+    c["跟进状态"] = "已发信";
+    c["已发送"] = true;
+    await api("/api/sent", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key,sent:true})});
+    renderDashboard();
+    fillDropdowns();
+    toast("已标记已发信");
+  } else toast("失败");
+}
+async function markAllSentQuick(){
+  const todo = ALL.filter(c=>c["等级"]==="A" && (c["跟进状态"]||"未联系")==="未联系");
+  if(!todo.length){ toast("没有待办客户"); return; }
+  let done = 0;
+  for(const c of todo){
+    const r = await api("/api/status", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:c._key,status:"已发信"})});
+    if(r.ok){
+      c["跟进状态"] = "已发信"; c["已发送"] = true;
+      await api("/api/sent", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:c._key,sent:true})});
+      done++;
+    }
+  }
+  renderDashboard();
+  fillDropdowns();
+  toast(`已标记 ${done} 家为已发信`);
+}
+async function copyText(key, type, btn){
+  const c = ALL.find(x=>x._key===key);
+  let txt = "";
+  if(type==="email") txt = "Subject: " + (c["email_subject"]||"") + "\n\n" + (c["email_body"]||"");
+  else txt = (c["wa_opener"]||"");
+  await navigator.clipboard.writeText(txt);
+  const o = btn.textContent; btn.textContent = "✓ 已复制";
+  setTimeout(()=>btn.textContent=o, 1200);
+}
+function clearFilters(){
+  sel = {market:"",date:"",grade:"",status:"",q:""};
+  ["#market","#date","#grade","#status","#q"].forEach(s=>$(s).value="");
+  render();
+}
+$("#market").onchange = e=>{ sel.market=e.target.value; render(); };
+$("#date").onchange = async e=>{ sel.date=e.target.value; await reload(); };
+$("#grade").onchange = e=>{ sel.grade=e.target.value; render(); };
+$("#status").onchange = e=>{ sel.status=e.target.value; render(); };
+$("#q").oninput = e=>{ sel.q=e.target.value.trim().toLowerCase(); render(); };
+async function reload(){
+  const res = await api("/api/customers" + (sel.date?`?date=${sel.date}`:""));
+  ALL = res.data; render();
+}
+
+load();
+</script>
+</body>
+</html>

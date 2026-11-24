@@ -1,0 +1,46 @@
+# 客户数据 / 密钥 / 本地产物，绝不提交
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+*.db
+data/
+customers/
+leads/
+backups/
+output/
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+Thumbs.db
+
+# 本地身份与密钥（用 *.example.* 占位）
+smtp_config.json
+tools/profile.json
+*.bak-*
+*.bak
+*.log
+
+# 本地线索池与市场计划（由 init_workspace.py 生成）
+master-lead-pool.csv
+market-plan.csv
+reports/
+outreach/
+review/
+logs/
+
+# 客户跟进台账（含客户隐私）
+客户跟进表.xlsx
+*.xlsx
+
+# 真实客户数据示例（含真实邮箱/电话/决策人，仅供本机参考，绝不提交）
+examples/*-leads-demo.csv
+examples/vietnam-50-leads-demo.csv
+examples/vietnam-outreach-drafts.md
+examples/vietnam-outreach-3-drafts.md
+examples/A级客户详细资料分析.html
+examples/客户评分明细看板.html
+examples/测试运行-3家新客户.html
+examples/测试运行-韩国5家客户.html

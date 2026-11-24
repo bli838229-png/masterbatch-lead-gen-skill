@@ -1,0 +1,9 @@
+{
+  "name": "Masterbatch Lead Gen",
+  "source": "local",
+  "version": "0.1.0",
+  "description_zh": "色母粒工厂海外自动获客工作流，覆盖目标市场研究、海外企业发现、线索评分、多语言开发信草稿与线索池管理。",
+  "description_en": "Overseas lead-generation workflow for masterbatch manufacturers — target-market research, prospect discovery, lead scoring, multilingual outreach drafting, and a local lead pool.",
+  "iconLocalPath": "_icon.png",
+  "tags": ["masterbatch", "lead-generation", "export", "B2B", "色母粒", "外贸获客"]
+}
